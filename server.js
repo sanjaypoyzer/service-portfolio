@@ -11,7 +11,34 @@ var path        = require('path'),
     favicon     = require('serve-favicon'),
     app         = express(),
     port        = process.env.PORT || 3100,
-    env         = process.env.NODE_ENV || 'development';
+    env         = process.env.NODE_ENV || 'development',
+		request			= require('request')
+
+		request('https://government-service.register.gov.uk/register.json', function (error, response, body) {
+		  if (!error && response.statusCode == 200) {
+				body = JSON.parse(body);
+		    var total_records = body['total-records'];
+				console.log('total is ' + total_records);
+				for (var i = 0; i < total_records; i++) {
+					request('https://government-service.register.gov.uk/records.json?page-size='+i, function (error, response, body) {
+						if (!error && response.statusCode == 200) {
+							var jResponse = JSON.parse(body);
+							var thisKey = Object.keys(jResponse)[0];
+							var str = jResponse[thisKey].item[0]['hostname']
+
+							fs.writeFile('lib/service-register-download/'+str+'.json', body )
+					 } else {
+						 console.log(error);
+					 }
+					}) //request
+				}
+		  }
+		})
+
+
+
+console.log('this is where we get the data')
+
 
 /*
   Load all the project data from the files.
