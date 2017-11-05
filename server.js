@@ -19,19 +19,29 @@ var path        = require('path'),
 				body = JSON.parse(body);
 		    var total_records = body['total-records'];
 				console.log('total is ' + total_records);
-				for (var i = 0; i < total_records; i++) {
-					request('https://government-service.register.gov.uk/records.json?page-size='+i, function (error, response, body) {
-						if (!error && response.statusCode == 200) {
-							var jResponse = JSON.parse(body);
-							var thisKey = Object.keys(jResponse)[0];
-							var str = jResponse[thisKey].item[0]['hostname']
+				request('https://government-service.register.gov.uk/records.json?page-size=5000', function (error, response, body) {
+					if (!error && response.statusCode == 200) {
+						var jResponse = JSON.parse(body);
+						// var thisKey = Object.keys(jResponse)[0];
+						// var str = jResponse[thisKey].item[0]['hostname']
 
-							fs.writeFile('lib/service-register-download/'+str+'.json', body )
-					 } else {
-						 console.log(error);
-					 }
-					}) //request
-				}
+						var result = [];
+						for(var i in jResponse){
+							result.push([i, jResponse [i]]);
+						}
+
+						for (var i = 0; i < result.length; i++) {
+							var thisItem = result[i]
+							console.log( thisItem )
+
+							var str = result[i][1].item[0].hostname
+							fs.writeFile('lib/service-register-download/'+str+'.json', JSON.stringify(thisItem[1]) )
+						}
+
+				 } else {
+					 console.log(error);
+				 }
+				}) //request
 		  }
 		})
 
